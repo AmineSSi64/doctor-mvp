@@ -1,0 +1,4 @@
+clinic_key,clinic_id,clinic_name,city,governorate,address
+1,CLI001,Cabinet Medical Essalama,Monastir,Monastir,"7 Avenue Habib Bourguiba, Monastir"
+2,CLI002,Polyclinique Ennour,Sfax,Sfax,"63 Avenue Habib Bourguiba, Sfax"
+3,CLI003,Centre Medical Al Amen,Ariana,Ariana,"27 Avenue Habib Bourguiba, Ariana"

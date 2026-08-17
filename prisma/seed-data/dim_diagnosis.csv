@@ -1,0 +1,31 @@
+diagnosis_key,diagnosis_id,diagnosis_name,category
+1,DIA001,Hypertension arterielle,Cardiovascular
+2,DIA002,Diabete type 2,Endocrine
+3,DIA003,Grippe saisonniere,Respiratory
+4,DIA004,Angine,ENT
+5,DIA005,Bronchite aigue,Respiratory
+6,DIA006,Migraine,Neurological
+7,DIA007,Lombalgie,Musculoskeletal
+8,DIA008,Gastrite,Digestive
+9,DIA009,Dermatite,Dermatological
+10,DIA010,Otite,ENT
+11,DIA011,Sinusite,ENT
+12,DIA012,Asthme,Respiratory
+13,DIA013,Anemie,Hematological
+14,DIA014,Allergie saisonniere,Immune
+15,DIA015,Conjonctivite,Ophthalmic
+16,DIA016,Arthrose,Musculoskeletal
+17,DIA017,Reflux gastro-oesophagien,Digestive
+18,DIA018,Insomnie,Neurological
+19,DIA019,Depression legere,Psychological
+20,DIA020,Anxiete,Psychological
+21,DIA021,Cystite,Urological
+22,DIA022,Eczema,Dermatological
+23,DIA023,Varicelle,Infectious
+24,DIA024,Otite moyenne,ENT
+25,DIA025,Hypothyroidie,Endocrine
+26,DIA026,Hypercholesterolemie,Cardiovascular
+27,DIA027,Tendinite,Musculoskeletal
+28,DIA028,Rhinite allergique,ENT
+29,DIA029,Colique nephretique,Urological
+30,DIA030,Gastro-enterite,Digestive

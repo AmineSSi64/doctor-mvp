@@ -1,0 +1,5 @@
+consultation_type_key,type_code,type_label
+1,FIRST_VISIT,First Visit
+2,FOLLOW_UP,Follow-up
+3,EMERGENCY,Emergency
+4,ROUTINE_CHECK,Routine Checkup

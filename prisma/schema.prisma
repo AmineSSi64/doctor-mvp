@@ -1,0 +1,280 @@
+// ============================================================================
+// OPERATIONAL DATABASE SCHEMA (OLTP)
+// ============================================================================
+// This is the schema the web application reads and writes to directly.
+// It is intentionally normalized (3NF-ish) and optimized for single-record
+// transactions (create one appointment, update one patient, etc.) — the
+// opposite of the analytical Star Schema (Dim_*/Fact_*) built separately
+// for Power BI. A future ETL job would read FROM this database and load
+// INTO the star schema; this file never defines Dim_*/Fact_* tables.
+//
+// Mapping notes to the existing analytical model (kept consistent on purpose):
+//   Appointment.status      -> same 4 values as Dim_Appointment_Status
+//   Consultation.type       -> same 4 values as Dim_Consultation_Type
+//   Consultation.appointmentId is nullable -> mirrors Fact_Consultation grain
+//     ("optionally linked to the appointment that generated it")
+//   Prescription -> PrescriptionItem (1-to-many) -> mirrors
+//     Fact_Prescription -> Fact_Prescription_Item
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Auth & roles
+// ----------------------------------------------------------------------------
+
+enum Role {
+  DOCTOR
+  ASSISTANT // not yet exposed in the UI; schema supports it for later.
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(DOCTOR)
+  createdAt    DateTime @default(now())
+
+  doctor Doctor?
+
+  @@map("users")
+}
+
+// ----------------------------------------------------------------------------
+// Reference / organizational data
+// ----------------------------------------------------------------------------
+
+model Clinic {
+  id          String @id @default(cuid())
+  name        String
+  city        String
+  governorate String
+  address     String?
+
+  doctors       Doctor[]
+  assistants    Assistant[]
+  appointments  Appointment[]
+  consultations Consultation[]
+
+  @@map("clinics")
+}
+
+model Doctor {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  firstName       String
+  lastName        String
+  specialty       String
+  phone           String
+  yearsExperience Int?
+  clinicId        String
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic        Clinic         @relation(fields: [clinicId], references: [id])
+  appointments  Appointment[]
+  consultations Consultation[]
+  prescriptions Prescription[]
+
+  @@index([clinicId])
+  @@map("doctors")
+}
+
+model Assistant {
+  id        String @id @default(cuid())
+  firstName String
+  lastName  String
+  phone     String
+  clinicId  String
+
+  clinic              Clinic        @relation(fields: [clinicId], references: [id])
+  bookedAppointments  Appointment[]
+
+  @@index([clinicId])
+  @@map("assistants")
+}
+
+// ----------------------------------------------------------------------------
+// Patients
+// ----------------------------------------------------------------------------
+
+enum Gender {
+  M
+  F
+}
+
+model Patient {
+  id               String   @id @default(cuid())
+  patientCode      String   @unique // human-friendly ID shown in the UI, e.g. PAT00123
+  firstName        String
+  lastName         String
+  gender           Gender
+  dateOfBirth      DateTime @db.Date
+  phone            String
+  city             String
+  governorate      String
+  registrationDate DateTime @default(now()) @db.Date
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  appointments  Appointment[]
+  consultations Consultation[]
+  prescriptions Prescription[]
+
+  @@index([lastName, firstName])
+  @@map("patients")
+}
+
+// ----------------------------------------------------------------------------
+// Clinical catalogs
+// ----------------------------------------------------------------------------
+
+model Diagnosis {
+  id       String  @id @default(cuid())
+  name     String
+  category String
+  // Marks the single catalog row used as the target for a doctor-entered
+  // custom diagnosis (see Consultation.customDiagnosis below). A boolean
+  // flag is used instead of matching on name === "Other" so the label can
+  // be renamed/translated without breaking the lookup.
+  isOther  Boolean @default(false)
+
+  consultations Consultation[]
+
+  @@map("diagnoses")
+}
+
+model Medication {
+  id          String @id @default(cuid())
+  name        String
+  class       String
+  defaultUnit String
+
+  items PrescriptionItem[]
+
+  @@map("medications")
+}
+
+// ----------------------------------------------------------------------------
+// Appointments
+// ----------------------------------------------------------------------------
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id                  String            @id @default(cuid())
+  patientId           String
+  doctorId            String
+  clinicId            String
+  bookedByAssistantId String?
+  scheduledAt         DateTime
+  durationMinutes     Int
+  status              AppointmentStatus @default(SCHEDULED)
+  notes               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  patient           Patient        @relation(fields: [patientId], references: [id])
+  doctor             Doctor         @relation(fields: [doctorId], references: [id])
+  clinic             Clinic         @relation(fields: [clinicId], references: [id])
+  bookedByAssistant  Assistant?     @relation(fields: [bookedByAssistantId], references: [id])
+  consultation       Consultation?
+
+  @@index([doctorId, scheduledAt])
+  @@index([patientId])
+  @@map("appointments")
+}
+
+// ----------------------------------------------------------------------------
+// Consultations
+// ----------------------------------------------------------------------------
+
+enum ConsultationType {
+  FIRST_VISIT
+  FOLLOW_UP
+  EMERGENCY
+  ROUTINE_CHECK
+}
+
+model Consultation {
+  id              String           @id @default(cuid())
+  appointmentId   String?          @unique
+  patientId       String
+  doctorId        String
+  clinicId        String
+  diagnosisId     String
+  // Free-text diagnosis a doctor enters when diagnosisId points at the
+  // catalog's "Other" row (Diagnosis.isOther). Nullable because it's only
+  // meaningful for that one case — see OTHER_DIAGNOSIS_VALUE in
+  // lib/validation/schemas.ts for how the form/action/service resolve it.
+  customDiagnosis String?
+  // Doctor-reported symptoms, kept separate from `notes` (which is the
+  // doctor's own clinical observations/follow-up plan) so each has a
+  // clear, single purpose on the consultation form and profile view.
+  symptoms        String?
+  type            ConsultationType
+  consultedAt     DateTime
+  durationMinutes Int
+  notes           String?
+  createdAt       DateTime         @default(now())
+
+  appointment  Appointment?   @relation(fields: [appointmentId], references: [id])
+  patient      Patient        @relation(fields: [patientId], references: [id])
+  doctor       Doctor         @relation(fields: [doctorId], references: [id])
+  clinic       Clinic         @relation(fields: [clinicId], references: [id])
+  diagnosis    Diagnosis      @relation(fields: [diagnosisId], references: [id])
+  prescriptions Prescription[]
+
+  @@index([patientId, consultedAt])
+  @@index([doctorId])
+  @@map("consultations")
+}
+
+// ----------------------------------------------------------------------------
+// Prescriptions (header + line items — mirrors Fact_Prescription / _Item)
+// ----------------------------------------------------------------------------
+
+model Prescription {
+  id             String   @id @default(cuid())
+  consultationId String
+  patientId      String
+  doctorId       String
+  issuedAt       DateTime @default(now())
+
+  consultation Consultation       @relation(fields: [consultationId], references: [id])
+  patient      Patient            @relation(fields: [patientId], references: [id])
+  doctor       Doctor             @relation(fields: [doctorId], references: [id])
+  items        PrescriptionItem[]
+
+  @@index([patientId])
+  @@index([consultationId])
+  @@map("prescriptions")
+}
+
+model PrescriptionItem {
+  id              String @id @default(cuid())
+  prescriptionId  String
+  medicationId    String
+  dosage          String
+  frequencyPerDay Int
+  durationDays    Int
+  quantity        Int
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medication   Medication   @relation(fields: [medicationId], references: [id])
+
+  @@index([prescriptionId])
+  @@map("prescription_items")
+}

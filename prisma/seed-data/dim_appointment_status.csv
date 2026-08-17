@@ -1,0 +1,5 @@
+status_key,status_code,status_label
+1,SCHEDULED,Scheduled
+2,COMPLETED,Completed
+3,CANCELLED,Cancelled
+4,NO_SHOW,No-show

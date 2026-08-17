@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   DESIGN TOKENS — "Luxury Clinical SaaS"
+   Signature choice: a near-black indigo "instrument panel" sidebar against a
+   quiet, light lavender-white content area. Brand identity lives in a
+   restrained purple → indigo/blue gradient used sparingly (primary actions,
+   the dashboard's signature Next Appointment card, the login visual) — the
+   interface itself stays ~80% neutral/white so the purple reads as premium
+   rather than overwhelming. Pink is a genuine accent: used in a handful of
+   deliberate spots, never as a base color.
+   ============================================================================ */
+:root {
+  --color-bg: #f7f7fc;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fbfaff;
+  --color-border: #e8e6f0;
+  --color-border-strong: #d9d5e6;
+
+  /* RGB triplets (not hex) for tokens that need Tailwind opacity modifiers,
+     e.g. ring-primary/40 — Tailwind v3 expands these to
+     rgb(var(--color-primary) / <alpha-value>), which only works with
+     space-separated components, not a hex string. */
+  --color-ink: 23 21 42;
+  --color-ink-muted: 107 102 128;
+  --color-ink-soft: 156 150 178;
+
+  --color-primary: 109 74 255; /* #6D4AFF */
+  --color-primary-hover: 91 52 235; /* between primary and deep purple */
+  --color-primary-deep: 75 43 190; /* #4B2BBE */
+  --color-primary-soft: #f1edff; /* lavender */
+
+  /* Semantic status colors — each genuinely distinct in hue so
+     Scheduled/Completed/Cancelled/No-show read apart at a glance without
+     reading the label. Scheduled uses the brand's electric blue rather than
+     a generic gray-blue, so it still feels native to the palette. */
+  --color-info: 59 130 246; /* #3B82F6 electric blue */
+  --color-info-soft: #e8f0ff;
+
+  --color-success: 16 185 129; /* #10B981 */
+  --color-success-soft: #e7f9f1;
+
+  --color-danger: 239 68 68; /* #EF4444 */
+  --color-danger-soft: #fdecec;
+
+  --color-warning: 245 158 11; /* #F59E0B */
+  --color-warning-soft: #fef3e2;
+
+  --color-accent: 236 72 153; /* #EC4899 pink — restrained accent, not a base color */
+  --color-accent-soft: #fce7f3;
+
+  --color-sidebar: #140d2b;
+  --color-sidebar-hover: #221a42;
+  --color-sidebar-text: #f4f2fb;
+  --color-sidebar-text-muted: #948dae;
+
+  --gradient-brand: linear-gradient(135deg, #6d4aff 0%, #4f46e5 100%);
+  --gradient-brand-blue: linear-gradient(135deg, #6d4aff 0%, #3b82f6 100%);
+  --gradient-sidebar: linear-gradient(180deg, #150e2d 0%, #0f0a22 100%);
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+}
+
+/* Visible keyboard focus everywhere — never remove outlines without a replacement. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tabular numerals for anything data-dense: tables, patient IDs, phone
+   numbers, and the dashboard's live countdown timer. */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   Brand gradient utilities — used sparingly (primary CTA surfaces, the
+   dashboard hero, the login visual panel), never as a page background.
+   ---------------------------------------------------------------------------- */
+.bg-gradient-brand {
+  background-image: var(--gradient-brand);
+}
+
+.bg-gradient-brand-blue {
+  background-image: var(--gradient-brand-blue);
+}
+
+.bg-gradient-sidebar {
+  background-image: var(--gradient-sidebar);
+}
+
+.text-gradient-brand {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Fine radial glow used behind hero/visual elements — a soft light source,
+   not a decorative blob competing with content. */
+.bg-glow-brand {
+  background-image: radial-gradient(
+    60% 60% at 30% 20%,
+    rgb(109 74 255 / 0.35) 0%,
+    rgb(79 70 229 / 0.12) 45%,
+    transparent 75%
+  );
+}

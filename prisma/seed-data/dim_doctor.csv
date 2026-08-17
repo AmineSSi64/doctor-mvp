@@ -1,0 +1,11 @@
+doctor_key,doctor_id,first_name,last_name,specialty,clinic_id,phone,years_experience
+1,DOC001,Chokri,Marzouki,Medecine Generale,CLI001,+216 31 323 338,2
+2,DOC002,Zied,Cherni,Rhumatologie,CLI002,+216 48 559 703,15
+3,DOC003,Mariem,Ben Romdhane,Pediatrie,CLI003,+216 74 448 384,24
+4,DOC004,Anis,Ben Romdhane,ORL,CLI001,+216 31 489 199,5
+5,DOC005,Wafa,Guesmi,Gynecologie,CLI002,+216 25 847 570,27
+6,DOC006,Aymen,Ben Amor,Rhumatologie,CLI003,+216 99 982 470,11
+7,DOC007,Yassine,Trabelsi,Dermatologie,CLI001,+216 57 181 975,26
+8,DOC008,Karim,Rekik,Gynecologie,CLI002,+216 66 266 479,16
+9,DOC009,Emna,Zribi,Gynecologie,CLI003,+216 29 723 750,24
+10,DOC010,Zied,Dridi,Dermatologie,CLI001,+216 79 488 376,7
